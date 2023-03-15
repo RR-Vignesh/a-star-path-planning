@@ -251,6 +251,19 @@ def move_right(curr_node):
         map_queue.put(next_node)
         parent_child_info[next_point] = current_point
 
+# function to track back from the goal node to the start node to get the shortest path
+def back_tracking(path_info, initial, current):
+    child = path_info.get(current)
+    current_tuple = tuple(current)
+    child_tuple = tuple(child)
+    shortest_path.append(current_tuple)
+    shortest_path.append(child_tuple)
+    while child != initial:  
+        child = path_info.get(child)
+        child_tuple = tuple(child)
+        shortest_path.append(child_tuple)
+    return shortest_path
+
 create_obstacle_map()
 start_node, goal_node = get_input()
 # print(eclidean_distance((0, 0), (1, 1)))
@@ -263,6 +276,7 @@ map_queue.put((eclidean_distance(start_pt, goal_pt), 0, start_pt))
 
 visited_nodes = []
 parent_child_info = {}
+shortest_path = []
 
 while True:
     current_node = map_queue.get()
@@ -290,4 +304,7 @@ while True:
         print("Reached Goal")
         stop = time.time()
         print("Time: ",stop - start)   
+        shortest = back_tracking(parent_child_info, start_pt, goal_pt)
+        shortest.reverse()  
+        print(shortest)
         break
