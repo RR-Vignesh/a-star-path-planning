@@ -2,6 +2,7 @@ import math
 from queue import PriorityQueue
 import time
 import pygame as pyg
+import numpy as np
 
 obstacle_points = []
 
@@ -124,157 +125,35 @@ def get_input():
 
     return start_node, goal_node, clearance, l, rad
 
-def eclidean_distance(pt1, pt2):
+def euclidean_distance(pt1, pt2):
     distance = math.sqrt(pow((pt1[0] - pt2[0]), 2) + pow((pt1[1] - pt2[1]),2))
     return round(distance, 2)
-
-def move_up_right(curr_node):
-    current_point = curr_node[2]
-    next_point = (current_point[0] + 1, current_point[1] + 1)     
-
-    if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = 1.4
-        updated_cost = curr_node[1] + cost         
-        next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
-        for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
-                if map_queue.queue[i][1] > updated_cost:
-                    map_queue.queue[i] = next_node 
-                    parent_child_info[next_point] = current_point
-                    return 
-                else:
-                    return
-        map_queue.put(next_node)
-        parent_child_info[next_point] = current_point
-
-def move_up_left(curr_node):
-    current_point = curr_node[2]
-    next_point = (current_point[0] - 1, current_point[1] + 1)     
-
-    if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = 1.4
-        updated_cost = curr_node[1] + cost         
-        next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
-        for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
-                if map_queue.queue[i][1] > updated_cost:
-                    map_queue.queue[i] = next_node 
-                    parent_child_info[next_point] = current_point
-                    return 
-                else:
-                    return
-        map_queue.put(next_node)
-        parent_child_info[next_point] = current_point
-
-def move_down_right(curr_node):
-    current_point = curr_node[2]
-    next_point = (current_point[0] + 1, current_point[1] - 1)     
-
-    if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = 1.4
-        updated_cost = curr_node[1] + cost         
-        next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
-        for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
-                if map_queue.queue[i][1] > updated_cost:
-                    map_queue.queue[i] = next_node 
-                    parent_child_info[next_point] = current_point
-                    return 
-                else:
-                    return
-        map_queue.put(next_node)
-        parent_child_info[next_point] = current_point
-
-def move_down_left(curr_node):
-    current_point = curr_node[2]
-    next_point = (current_point[0] - 1, current_point[1] - 1)     
-
-    if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = 1.4
-        updated_cost = curr_node[1] + cost         
-        next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
-        for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
-                if map_queue.queue[i][1] > updated_cost:
-                    map_queue.queue[i] = next_node 
-                    parent_child_info[next_point] = current_point
-                    return 
-                else:
-                    return
-        map_queue.put(next_node)
-        parent_child_info[next_point] = current_point
-
-def move_up(curr_node):
-    current_point = curr_node[2]
-    next_point = (current_point[0], current_point[1] + 1)     
-
-    if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = 1
-        updated_cost = curr_node[1] + cost         
-        next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
-        for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
-                if map_queue.queue[i][1] > updated_cost:
-                    map_queue.queue[i] = next_node 
-                    parent_child_info[next_point] = current_point
-                    return 
-                else:
-                    return
-        map_queue.put(next_node)
-        parent_child_info[next_point] = current_point
-
-def move_down(curr_node):
-    current_point = curr_node[2]
-    next_point = (current_point[0], current_point[1] - 1)     
-
-    if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = 1
-        updated_cost = curr_node[1] + cost         
-        next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
-        for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
-                if map_queue.queue[i][1] > updated_cost:
-                    map_queue.queue[i] = next_node 
-                    parent_child_info[next_point] = current_point
-                    return 
-                else:
-                    return
-        map_queue.put(next_node)
-        parent_child_info[next_point] = current_point
-
-def move_left(curr_node):
-    current_point = curr_node[2]
-    next_point = (current_point[0] - 1, current_point[1])     
-
-    if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = 1
-        updated_cost = curr_node[1] + cost         
-        next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
-        for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
-                if map_queue.queue[i][1] > updated_cost:
-                    map_queue.queue[i] = next_node 
-                    parent_child_info[next_point] = current_point
-                    return 
-                else:
-                    return
-        map_queue.put(next_node)
-        parent_child_info[next_point] = current_point
-
+def round_nearest(val):
+    if val-int(val)<0.5:
+        val=int(val)
+    elif val-int(val) == 0.5:
+        val=val
+    else:
+        val = int(val)+1
+    
+    return val
+    
 def move_right(curr_node):
-    current_point = curr_node[2]
+    current_point = (curr_node[2][0], curr_node[2][1])
     next_point = (current_point[0] + l, current_point[1])  
     next_angle = current_point[2]
-    # update angle for other moves
-
-    if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = l
-        updated_cost = curr_node[1] + int(cost)        
-        next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
+    # round off next point to nearest 0.5
+    next_point = (round_nearest(current_point[0] + l), round_nearest(current_point[1]))
+    
+    ## Obstacle with clearance
+    if visited_nodes[int(next_point[0]*2)][int(next_point[1]*2)][next_angle/30] != 1 and next_point not in obstacle_points:
+        cost_to_come = curr_node[1] + l 
+        cost_to_go = euclidean_distance(next_point, goal_pt)      
+        next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
         for i in range(map_queue.qsize()):
             #if map_queue.queue[i][2] == next_point:
-            if eclidean_distance(next_point,map_queue.queue[i][2]) < 0.5:
-                if map_queue.queue[i][1] > updated_cost:
+            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5:
+                if map_queue.queue[i][1] > cost_to_come:
                     map_queue.queue[i] = next_node 
                     parent_child_info[next_point] = current_point
                     return 
@@ -379,39 +258,46 @@ def pygame_visualization(visited_nodes, shortest_path):
 
 # Obtaining and validating the input from the user
 start_node, goal_node, clearance, l, radius = get_input()
-# print(eclidean_distance((0, 0), (1, 1)))
+
 start = time.time()
 map_queue = PriorityQueue()
 start_pt = (start_node[0], start_node[1])
 goal_pt = (goal_node[0], goal_node[1])
-map_queue.put((eclidean_distance(start_pt, goal_pt), 0, start_node))
-#map_queue.put((eclidean_distance(start_pt, goal_pt), 0, start_node))
-# print(map_queue.queue)
+map_queue.put((euclidean_distance(start_pt, goal_pt), 0, start_node))
 
-visited_nodes = []
+visited_nodes = np.zeros((1200,500,12), dtype=int)
 parent_child_info = {}
 shortest_path = []
 
 while True:
     current_node = map_queue.get()
-    #print(current_node)
-    visited_nodes.append(current_node[2])
     x, y = current_node[2][0], current_node[2][1]
-    #if current_node[2] != goal_pt:
-    if eclidean_distance((x,y), goal_pt) > 1.5:
-       # if check_obstacle_space((x+radius+l,y)) < 600:
-        if x+radius+l < 600:
-            move_right(current_node)
-        if x+radius+(l*math.cos(math.pi/6)) < 600 and y+radius+(l*math.sin(math.pi/6)) < 250:
-            move_plus_30(current_node)
+    #print(current_node)
+    """ if current_node[2][0]-int(current_node[2][0]) < 0.5 and current_node[2][1]-int(current_node[2][1]) < 0.5:
+        visited_nodes[2*int(x)][2*int(y)][current_node[2][2]/30] = 1
+    if current_node[2][0]-int(current_node[2][0]) < 0.5 and current_node[2][1]-int(current_node[2][1]) >= 0.5:
+        visited_nodes[2*int(x)][2*int(y+1)][current_node[2][2]/30] = 1
+    if current_node[2][0]-int(current_node[2][0]) >= 0.5 and current_node[2][1]-int(current_node[2][1]) < 0.5:
+        visited_nodes[2*int(x+1)][2*y][current_node[2][2]/30] = 1
+    if current_node[2][0]-int(current_node[2][0]) >= 0.5 and current_node[2][1]-int(current_node[2][1]) >= 0.5:
+        visited_nodes[2*int(x+1)][2*int(y+1)][current_node[2][2]/30] = 1 """
+    if visited_nodes[int(x*2)][int(y*2)][current_node[2][2]/30] != 1:
+        visited_nodes[int(x*2)][int(y*2)][current_node[2][2]/30]=1
+        if euclidean_distance((x,y), goal_pt) > 1.5:
+        # if check_obstacle_space((x+radius+l,y)) < 600:
+        ### change the limits to max x and y size
+            if x+l < 600:
+                move_right(current_node)
+            if x+(l*math.cos(np.deg2rad(current_node[2][2]) + math.pi/6)) < 600 and y+(l*math.sin(np.deg2rad(current_node[2][2]) + math.pi/6)) < 250:
+                move_plus_30(current_node)
 
-    else:
-        print("Reached Goal")
-        stop = time.time()
-        print("Time: ",stop - start)   
-        shortest = back_tracking(parent_child_info, start_pt, goal_pt)
-        shortest.reverse()  
-        print(shortest)
-        break
+        else:
+            print("Reached Goal")
+            stop = time.time()
+            print("Time: ",stop - start)   
+            shortest = back_tracking(parent_child_info, start_pt, goal_pt)
+            shortest.reverse()  
+            print(shortest)
+            break
 
 pygame_visualization(visited_nodes, shortest_path)
