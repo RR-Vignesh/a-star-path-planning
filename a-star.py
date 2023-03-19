@@ -11,67 +11,65 @@ X_SIZE = 600
 Y_SIZE = 250
 
 # create map with obstacle
-def create_obstacle_map(clearance, radius):
-    # Wall clearance
-    for xp in range(0,601):
-        for yp in range(0,6):
-            obstacle_points.append((xp,yp))
-        for yp in range(245,251):
-            obstacle_points.append((xp,yp))
-    
-    for yp in range(0,251):
-        for xp in range(0,6):
-            obstacle_points.append((xp,yp))
-        for xp in range(595,601):
-            obstacle_points.append((xp,yp))
+def create_obstacle_map(clearance):
+    points = []
+    for xp in range(0, X_SIZE+1):
+        for yp in range(0, clearance+1):
+            points.append((xp,yp))
+        for yp in range(Y_SIZE - clearance, Y_SIZE + 1):
+            points.append((xp,yp))
 
-    # Rectangle and clearance
-    for xp in range(100,151):
-        for yp in range(101,106):
-            obstacle_points.append((xp,yp))
-        for yp in range(145, 151):
-            obstacle_points.append((xp,yp))
-        for yp in range(0,101):
-            obstacle_points.append((xp,yp))
-    
-    for xp in range(151,156):
-        for yp in range(0,106):
-            obstacle_points.append((xp,yp))
-        for yp in range(145,250):
-            obstacle_points.append((xp,yp))
-    
-    for xp in range(100,151):
-        for yp in range(150,251):
-            obstacle_points.append((xp,yp))
-        for yp in range(101,105):
-            obstacle_points.append((xp,yp))
-            
-    for xp in range(95,100):
-        for yp in range(150,251):
-            obstacle_points.append((xp,yp))
-        for yp in range(100,105):
-            obstacle_points.append((xp,yp))  
-        for yp in range(0,101):
-            obstacle_points.append((xp,yp))     
-        for yp in range(145,151):
-            obstacle_points.append((xp,yp)) 
+    for yp in range(0, Y_SIZE + 1):
+        for xp in range(0, clearance+1):
+            points.append((xp,yp))
+        for xp in range(X_SIZE - clearance, X_SIZE + 1):
+            points.append((xp,yp))
+
+    # Rectangles and clearance
+    for xp in range(100 - clearance, 150 + clearance + 1):
+        for yp in range(0, Y_SIZE+1):
+            if yp <= (100 + clearance) or yp >= (150 - clearance):
+                points.append((xp,yp))
 
     # triangle 
-    for xp in range(450, 601):
-        for yp in range(0,251):
-            if (2*xp - yp <= 895) and (2*xp+yp <= 1145):
-                obstacle_points.append((xp,yp))
+    for xp in range(460-clearance, 510+2*clearance):
+        for yp in range(0, Y_SIZE):
+            m1, m2 = 2, 2
+            b1, b2 = 895, 1145
+            if (m1*xp - yp <= b1) and (m2*xp+yp <= b2):
+                    points.append((xp,yp))
+            
+            c1 = b1 + clearance * (math.sqrt(pow(m2,2) + 1))
+            c2 = b1 - clearance * (math.sqrt(pow(m2,2) + 1))
+            c3 = b2 + clearance * (math.sqrt(pow(m1,2) + 1))
+            c4 = b2 - clearance * (math.sqrt(pow(m1,2) + 1))
 
-            if (2*xp+yp <= 1156.18) and (2*xp - yp <= 906.18):
-                obstacle_points.append((xp,yp))
+            if (m1*xp-yp <= min(c1, c2)) and (m2*xp+yp <= min(c3, c4)):
+                    points.append((xp,yp))  
+
 
     # Hexagon
-    for xp in range(220,380):
-        for yp in range(40,230):
-            if  (yp - (0.577)*xp - (32.692)) < 0 and (yp + (0.577)*xp - (378.846)) < 0 and (yp - (0.577)*xp + (128.846)) > 0 and (yp + (0.577)*xp - (217.307)) > 0 and (230 <= xp <= 370):
-                obstacle_points.append((xp,yp))
+    for xp in range(300 - int(64.95) - clearance, 300 + int(64.95) + clearance):
+        for yp in range(125 - 75 - clearance, 125 + 75 + clearance):
+            m = 0.577
+            b1, b2, b3, b4 = 32.692, 378.846, 217.307, 128.846
+            if  (yp - m*xp - b1) < 0 and (yp + m*xp - b2) < 0 and (yp + m*xp - b3) > 0 and (yp - m*xp + b4) > 0:
+                points.append((xp,yp))
+            
+            c1 = b1 + clearance * (math.sqrt(pow(m,2) + 1))
+            c2 = b1 - clearance * (math.sqrt(pow(m,2) + 1))
+            c3 = b2 + clearance * (math.sqrt(pow(m,2) + 1))
+            c4 = b2 - clearance * (math.sqrt(pow(m,2) + 1))
+            c5 = b3 + clearance * (math.sqrt(pow(m,2) + 1))
+            c6 = b3 - clearance * (math.sqrt(pow(m,2) + 1))
+            c7 = b4 + clearance * (math.sqrt(pow(m,2) + 1))
+            c8 = b4 - clearance * (math.sqrt(pow(m,2) + 1))
 
-def check_obstacle_space(node, rad):
+            if  (yp - m*xp - min(c1, c2)) < 0 and (yp + m*xp - min(c3, c4)) < 0 and (yp + m*xp - min(c5, c6)) > 0 and (yp - m*xp + min(c7, c8)) > 0:
+                points.append((xp,yp))    
+    return points
+
+def check_obstacle_space(node, rad, obstacle_points):
     robot_space = ((node[0],node[1]),(node[0]+rad,node[1]), (node[0]-rad,node[1]), (node[0],node[1]+rad), (node[0],node[1]-rad))
     for robot_pos in robot_space:
         if robot_pos in obstacle_points:
@@ -85,14 +83,14 @@ def get_input():
     rad = int(input("Enter the radius of the mobile robot"))
 
     # Create Obstacle based on the clearance and radius of the robot
-    create_obstacle_map(clearance,rad)
+    obstacle_points = create_obstacle_map(clearance + rad)
     l = int(input("Enter the step size L of the mobile robot (between 1-10)"))
     accept_start_node, accept_goal_node = True, True
     while accept_start_node:
         start_x = int(input("Enter start x: "))
         start_y = int(input("Enter start y: "))
         start_node = (start_x, start_y)
-        robot_status = check_obstacle_space(start_node, rad)
+        robot_status = check_obstacle_space(start_node, rad, obstacle_points)
         if robot_status == True:
             accept_start_node = False
             while True:
@@ -128,6 +126,7 @@ def get_input():
 def euclidean_distance(pt1, pt2):
     distance = math.sqrt(pow((pt1[0] - pt2[0]), 2) + pow((pt1[1] - pt2[1]),2))
     return round(distance, 2)
+
 def round_nearest(val):
     if val-int(val)<0.5:
         val=int(val)
@@ -152,7 +151,31 @@ def move_right(curr_node):
         next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
         for i in range(map_queue.qsize()):
             #if map_queue.queue[i][2] == next_point:
-            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5:
+            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
+                if map_queue.queue[i][1] > cost_to_come:
+                    map_queue.queue[i] = next_node 
+                    parent_child_info[next_point] = current_point
+                    return 
+                else:
+                    return
+        map_queue.put(next_node)
+        parent_child_info[next_point] = current_point
+
+def move_plus_30(curr_node):
+    current_point = (curr_node[2][0], curr_node[2][1])
+    next_point = ((current_point[0] + l*math.cos(math.pi/6)), current_point[1] + l*math.sin(math.pi/6))  
+    next_angle = current_point[2]
+    # round off next point to nearest 0.5
+    next_point = (round_nearest(current_point[0] + l), round_nearest(current_point[1]))
+    
+    ## Obstacle with clearance
+    if visited_nodes[int(next_point[0]*2)][int(next_point[1]*2)][next_angle/30] != 1 and next_point not in obstacle_points:
+        cost_to_come = curr_node[1] + l 
+        cost_to_go = euclidean_distance(next_point, goal_pt)      
+        next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
+        for i in range(map_queue.qsize()):
+            #if map_queue.queue[i][2] == next_point:
+            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][1] > cost_to_come:
                     map_queue.queue[i] = next_node 
                     parent_child_info[next_point] = current_point
@@ -269,18 +292,12 @@ visited_nodes = np.zeros((1200,500,12), dtype=int)
 parent_child_info = {}
 shortest_path = []
 
+visualization_points = create_obstacle_map(clearance)
+
 while True:
     current_node = map_queue.get()
     x, y = current_node[2][0], current_node[2][1]
     #print(current_node)
-    """ if current_node[2][0]-int(current_node[2][0]) < 0.5 and current_node[2][1]-int(current_node[2][1]) < 0.5:
-        visited_nodes[2*int(x)][2*int(y)][current_node[2][2]/30] = 1
-    if current_node[2][0]-int(current_node[2][0]) < 0.5 and current_node[2][1]-int(current_node[2][1]) >= 0.5:
-        visited_nodes[2*int(x)][2*int(y+1)][current_node[2][2]/30] = 1
-    if current_node[2][0]-int(current_node[2][0]) >= 0.5 and current_node[2][1]-int(current_node[2][1]) < 0.5:
-        visited_nodes[2*int(x+1)][2*y][current_node[2][2]/30] = 1
-    if current_node[2][0]-int(current_node[2][0]) >= 0.5 and current_node[2][1]-int(current_node[2][1]) >= 0.5:
-        visited_nodes[2*int(x+1)][2*int(y+1)][current_node[2][2]/30] = 1 """
     if visited_nodes[int(x*2)][int(y*2)][current_node[2][2]/30] != 1:
         visited_nodes[int(x*2)][int(y*2)][current_node[2][2]/30]=1
         if euclidean_distance((x,y), goal_pt) > 1.5:
