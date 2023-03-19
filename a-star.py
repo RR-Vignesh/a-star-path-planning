@@ -10,7 +10,7 @@ X_SIZE = 600
 Y_SIZE = 250
 
 # create map with obstacle
-def create_obstacle_map():
+def create_obstacle_map(clearance, radius):
     # Wall clearance
     for xp in range(0,601):
         for yp in range(0,6):
@@ -78,11 +78,14 @@ def check_obstacle_space(node, rad):
         
     return True
 
-# get input and check if valid or not
+# Validating input values
 def get_input():
     clearance = int(input("Enter the clearance of the mobile robot"))
-    l = int(input("Enter the step size L of the mobile robot (between 1-10)"))
     rad = int(input("Enter the radius of the mobile robot"))
+
+    # Create Obstacle based on the clearance and radius of the robot
+    create_obstacle_map(clearance,rad)
+    l = int(input("Enter the step size L of the mobile robot (between 1-10)"))
     accept_start_node, accept_goal_node = True, True
     while accept_start_node:
         start_x = int(input("Enter start x: "))
@@ -91,7 +94,12 @@ def get_input():
         robot_status = check_obstacle_space(start_node, rad)
         if robot_status == True:
             accept_start_node = False
-            start_theta = int(input("Enter orientation of the start node in degrees (between 0 to 360 degrees): "))
+            while True:
+                start_theta = int(input("Enter orientation of the start node in degrees (between 0 to 360 degrees): "))
+                if start_theta % 30 == 0:
+                    break
+                else:
+                    print("Incorrect theta value. Please enter positive theta in multiple of 30")
             start_node = (start_x, start_y, start_theta)
         else:
             print("Entered start node is in obstacle. Please enter a valid co-ordinate...")
@@ -102,13 +110,19 @@ def get_input():
         goal_node = (goal_x, goal_y)
         if goal_node not in obstacle_points:
             accept_goal_node = False
-            goal_theta = int(input("Enter orientation of the goal node in degrees (between 0 to 360 degrees): "))
+            while True:
+                goal_theta = int(input("Enter orientation of the goal node in degrees (between 0 to 360 degrees): "))
+                if goal_theta % 30 == 0:
+                    break
+                else:
+                    print("Incorrect theta value. Please enter positive theta in multiple of 30")
+
             goal_node = (goal_x, goal_y, goal_theta)
         else:
             print("Entered goal node is in obstacle. Please enter a co-ordinate...")
     
 
-    return start_node, goal_node, clearance, l
+    return start_node, goal_node, clearance, l, rad
 
 def eclidean_distance(pt1, pt2):
     distance = math.sqrt(pow((pt1[0] - pt2[0]), 2) + pow((pt1[1] - pt2[1]),2))
@@ -363,14 +377,14 @@ def pygame_visualization(visited_nodes, shortest_path):
         condition = False
     pyg.quit()
 
-create_obstacle_map()
-start_node, goal_node, clearance, l = get_input()
+# Obtaining and validating the input from the user
+start_node, goal_node, clearance, l, radius = get_input()
 # print(eclidean_distance((0, 0), (1, 1)))
 start = time.time()
 map_queue = PriorityQueue()
 start_pt = (start_node[0], start_node[1])
 goal_pt = (goal_node[0], goal_node[1])
-map_queue.put((eclidean_distance(start_pt, goal_pt), 0, start_pt))
+map_queue.put((eclidean_distance(start_pt, goal_pt), 0, start_node))
 #map_queue.put((eclidean_distance(start_pt, goal_pt), 0, start_node))
 # print(map_queue.queue)
 
@@ -385,24 +399,11 @@ while True:
     x, y = current_node[2][0], current_node[2][1]
     #if current_node[2] != goal_pt:
     if eclidean_distance((x,y), goal_pt) > 1.5:
-        # if y+1 < 600:
-        #     move_up(current_node)
-        # if y-1 >= 0:
-        #     move_down(current_node)
-        # if x+1 < 250:
-        #     move_right(current_node)
-        # if x-1 >= 0:
-        #     move_left(current_node)
-        # if x+1 < 600 and y+1 < 250:
-        #     move_up_right(current_node)
-        # if x-1 >=0 and y+1 < 250:
-        #     move_up_left(current_node)
-        # if x+1 < 600 and y-1 >= 0:
-        #     move_down_right(current_node)
-        # if x-1 >=0 and y-1 >= 0:
-        #     move_down_left(current_node)
-        if x+l < 600:
+       # if check_obstacle_space((x+radius+l,y)) < 600:
+        if x+radius+l < 600:
             move_right(current_node)
+        if x+radius+(l*math.cos(math.pi/6)) < 600 and y+radius+(l*math.sin(math.pi/6)) < 250:
+            move_plus_30(current_node)
 
     else:
         print("Reached Goal")
