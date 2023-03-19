@@ -70,19 +70,31 @@ def create_obstacle_map():
             if  (yp - (0.577)*xp - (32.692)) < 0 and (yp + (0.577)*xp - (378.846)) < 0 and (yp - (0.577)*xp + (128.846)) > 0 and (yp + (0.577)*xp - (217.307)) > 0 and (230 <= xp <= 370):
                 obstacle_points.append((xp,yp))
 
+def check_obstacle_space(node, rad):
+    robot_space = ((node[0],node[1]),(node[0]+rad,node[1]), (node[0]-rad,node[1]), (node[0],node[1]+rad), (node[0],node[1]-rad))
+    for robot_pos in robot_space:
+        if robot_pos in obstacle_points:
+            return False
+        
+    return True
+
 # get input and check if valid or not
 def get_input():
+    clearance = int(input("Enter the clearance of the mobile robot"))
+    l = int(input("Enter the step size L of the mobile robot (between 1-10)"))
+    rad = int(input("Enter the radius of the mobile robot"))
     accept_start_node, accept_goal_node = True, True
     while accept_start_node:
         start_x = int(input("Enter start x: "))
         start_y = int(input("Enter start y: "))
         start_node = (start_x, start_y)
-        if start_node not in obstacle_points:
+        robot_status = check_obstacle_space(start_node, rad)
+        if robot_status == True:
             accept_start_node = False
-            start_theta = int(input("Enter start theta: "))
+            start_theta = int(input("Enter orientation of the start node in degrees (between 0 to 360 degrees): "))
             start_node = (start_x, start_y, start_theta)
         else:
-            print("Entered start node is in obstacle. Please enter a valid note...")
+            print("Entered start node is in obstacle. Please enter a valid co-ordinate...")
 
     while accept_goal_node:    
         goal_x = int(input("Enter goal x: "))
@@ -90,11 +102,13 @@ def get_input():
         goal_node = (goal_x, goal_y)
         if goal_node not in obstacle_points:
             accept_goal_node = False
-            goal_theta = int(input("Enter goal theta: "))
+            goal_theta = int(input("Enter orientation of the goal node in degrees (between 0 to 360 degrees): "))
             goal_node = (goal_x, goal_y, goal_theta)
         else:
-            print("Entered goal node is in obstacle. Please enter a valid note...")
-    return start_node, goal_node
+            print("Entered goal node is in obstacle. Please enter a co-ordinate...")
+    
+
+    return start_node, goal_node, clearance, l
 
 def eclidean_distance(pt1, pt2):
     distance = math.sqrt(pow((pt1[0] - pt2[0]), 2) + pow((pt1[1] - pt2[1]),2))
@@ -235,14 +249,17 @@ def move_left(curr_node):
 
 def move_right(curr_node):
     current_point = curr_node[2]
-    next_point = (current_point[0] + 1, current_point[1])     
+    next_point = (current_point[0] + l, current_point[1])  
+    next_angle = current_point[2]
+    # update angle for other moves
 
     if next_point not in visited_nodes and next_point not in obstacle_points:
-        cost = 1
+        cost = l
         updated_cost = curr_node[1] + int(cost)        
         next_node = (updated_cost + eclidean_distance(next_point, goal_pt),updated_cost, next_point)
         for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
+            #if map_queue.queue[i][2] == next_point:
+            if eclidean_distance(next_point,map_queue.queue[i][2]) < 0.5:
                 if map_queue.queue[i][1] > updated_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[next_point] = current_point
@@ -347,13 +364,14 @@ def pygame_visualization(visited_nodes, shortest_path):
     pyg.quit()
 
 create_obstacle_map()
-start_node, goal_node = get_input()
+start_node, goal_node, clearance, l = get_input()
 # print(eclidean_distance((0, 0), (1, 1)))
 start = time.time()
 map_queue = PriorityQueue()
 start_pt = (start_node[0], start_node[1])
 goal_pt = (goal_node[0], goal_node[1])
 map_queue.put((eclidean_distance(start_pt, goal_pt), 0, start_pt))
+#map_queue.put((eclidean_distance(start_pt, goal_pt), 0, start_node))
 # print(map_queue.queue)
 
 visited_nodes = []
@@ -362,26 +380,30 @@ shortest_path = []
 
 while True:
     current_node = map_queue.get()
-    print(current_node)
+    #print(current_node)
     visited_nodes.append(current_node[2])
     x, y = current_node[2][0], current_node[2][1]
-    if current_node[2] != goal_pt:
-        if y+1 < 600:
-            move_up(current_node)
-        if y-1 >= 0:
-            move_down(current_node)
-        if x+1 < 250:
+    #if current_node[2] != goal_pt:
+    if eclidean_distance((x,y), goal_pt) > 1.5:
+        # if y+1 < 600:
+        #     move_up(current_node)
+        # if y-1 >= 0:
+        #     move_down(current_node)
+        # if x+1 < 250:
+        #     move_right(current_node)
+        # if x-1 >= 0:
+        #     move_left(current_node)
+        # if x+1 < 600 and y+1 < 250:
+        #     move_up_right(current_node)
+        # if x-1 >=0 and y+1 < 250:
+        #     move_up_left(current_node)
+        # if x+1 < 600 and y-1 >= 0:
+        #     move_down_right(current_node)
+        # if x-1 >=0 and y-1 >= 0:
+        #     move_down_left(current_node)
+        if x+l < 600:
             move_right(current_node)
-        if x-1 >= 0:
-            move_left(current_node)
-        if x+1 < 600 and y+1 < 250:
-            move_up_right(current_node)
-        if x-1 >=0 and y+1 < 250:
-            move_up_left(current_node)
-        if x+1 < 600 and y-1 >= 0:
-            move_down_right(current_node)
-        if x-1 >=0 and y-1 >= 0:
-            move_down_left(current_node)
+
     else:
         print("Reached Goal")
         stop = time.time()
