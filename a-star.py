@@ -136,11 +136,10 @@ def round_nearest(val):
     return val
     
 def move_right(curr_node):
-    current_point = (curr_node[2][0], curr_node[2][1])
-    print("the current points are : ")
-    print(current_point)
+    global goal_reached
+    current_point = (curr_node[3][0], curr_node[3][1])
     next_point = (current_point[0] + l, current_point[1])  
-    next_angle = curr_node[2][2]
+    next_angle = curr_node[3][2]
     if next_angle >= 360:
         next_angle-=360
     if next_angle < 0:
@@ -148,49 +147,50 @@ def move_right(curr_node):
 
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
-    print("The next point after rounding off is :")
-    print(next_point)
+    """ print("The next point after rounding off is :")
+    print(next_point) """
     
     ## Obstacle with clearance
     if visited_nodes[int(next_point[0]*2)][int(next_point[1]*2)][int(next_point[2]/30)] != 1 and (next_point[0],next_point[1]) not in obstacle_points:
-        cost_to_come = curr_node[1] + l 
-        cost_to_go = euclidean_distance(next_point, goal_pt)      
-        next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
+        cost_to_come = curr_node[2] + l 
+        cost_to_go = euclidean_distance(next_point, goal_pt)    
+        total_cost =  cost_to_come + cost_to_go
+        next_node = (total_cost ,cost_to_go, cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
-                if map_queue.queue[i][1] > cost_to_come:
+            if map_queue.queue[i][3] == next_point:
+                if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
                     return
                 else:
                     return
         map_queue.put(next_node)
-        print("The next node after moving right is : ")
-        print(next_node)
         parent_child_info[(next_point[0],next_point[1])] = current_point
+        if cost_to_go < 1.5:
+            goal_reached = True
 
 def move_plus_30(curr_node):
-    current_point = (curr_node[2][0], curr_node[2][1])
-    next_point = ((current_point[0] + l*math.cos(np.deg2rad(current_node[2][2]) + math.pi/6)), current_point[1] + l*math.sin(np.deg2rad(current_node[2][2]) + math.pi/6))  
-    next_angle = curr_node[2][2] + 30
+    global goal_reached
+    current_point = (curr_node[3][0], curr_node[3][1])
+    next_point = (current_point[0] + l*math.cos(np.deg2rad(curr_node[3][2]) + math.pi/6)), current_point[1] + l*math.sin(np.deg2rad(curr_node[3][2]) + math.pi/6) 
+    next_angle = curr_node[3][2] + 30
     if next_angle >= 360:
         next_angle-=360
     if next_angle < 0:
         next_angle+=360
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
-    print("The next point after rounding off is :")
-    print(next_point)
     
     ## Obstacle with clearance
     if visited_nodes[int(next_point[0]*2)][int(next_point[1]*2)][int(next_point[2]/30)] != 1 and (next_point[0],next_point[1]) not in obstacle_points:
-        cost_to_come = curr_node[1] + l 
-        cost_to_go = euclidean_distance(next_point, goal_pt)      
-        next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
+        cost_to_come = curr_node[2] + l 
+        cost_to_go = euclidean_distance(next_point, goal_pt)
+        total_cost = cost_to_come + cost_to_go     
+        next_node = (total_cost, cost_to_go, cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
+            if map_queue.queue[i][3] == next_point:
             #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
-                if map_queue.queue[i][1] > cost_to_come:
+                if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
                     return 
@@ -198,29 +198,31 @@ def move_plus_30(curr_node):
                     return
         map_queue.put(next_node)
         parent_child_info[(next_point[0],next_point[1])] = current_point
+        if cost_to_go < 1.5:
+            goal_reached = True
 
 def move_plus_60(curr_node):
-    current_point = (curr_node[2][0], curr_node[2][1])
-    next_point = ((current_point[0] + l*math.cos(np.deg2rad(current_node[2][2]) + math.pi/3)), current_point[1] + l*math.sin(np.deg2rad(current_node[2][2]) + math.pi/3))  
-    next_angle = curr_node[2][2] + 60
+    global goal_reached
+    current_point = (curr_node[3][0], curr_node[3][1])
+    next_point = ((current_point[0] + l*math.cos(np.deg2rad(curr_node[3][2]) + math.pi/3)), current_point[1] + l*math.sin(np.deg2rad(curr_node[3][2]) + math.pi/3))  
+    next_angle = curr_node[3][2] + 60
     if next_angle >= 360:
         next_angle-=360
     if next_angle < 0:
         next_angle+=360
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
-    print("The next point after rounding off is :")
-    print(next_point)
     
     ## Obstacle with clearance
     if visited_nodes[int(next_point[0]*2)][int(next_point[1]*2)][int(next_point[2]/30)] != 1 and (next_point[0],next_point[1]) not in obstacle_points:
-        cost_to_come = curr_node[1] + l 
-        cost_to_go = euclidean_distance(next_point, goal_pt)      
-        next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
+        cost_to_come = curr_node[2] + l 
+        cost_to_go = euclidean_distance(next_point, goal_pt) 
+        total_cost = cost_to_come + cost_to_go   
+        next_node = (total_cost, cost_to_go, cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
+            if map_queue.queue[i][3] == next_point:
             #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
-                if map_queue.queue[i][1] > cost_to_come:
+                if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
                     return 
@@ -228,29 +230,32 @@ def move_plus_60(curr_node):
                     return 
         map_queue.put(next_node)
         parent_child_info[(next_point[0],next_point[1])] = current_point
+
+        if cost_to_go < 1.5:
+            goal_reached = True
 
 def move_minus_30(curr_node):
-    current_point = (curr_node[2][0], curr_node[2][1])
-    next_point = ((current_point[0] + l*math.cos(np.deg2rad(current_node[2][2])-math.pi/6)), current_point[1] + l*math.sin(np.deg2rad(current_node[2][2])-math.pi/6))  
-    next_angle = curr_node[2][2] - 30
+    global goal_reached
+    current_point = (curr_node[3][0], curr_node[3][1])
+    next_point = ((current_point[0] + l*math.cos(np.deg2rad(curr_node[3][2])-math.pi/6)), current_point[1] + l*math.sin(np.deg2rad(curr_node[3][2])-math.pi/6))  
+    next_angle = curr_node[3][2] - 30
     if next_angle >= 360:
         next_angle-=360
     if next_angle < 0:
         next_angle+=360
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
-    print("The next point after rounding off is : ")
-    print(next_point)
     
     ## Obstacle with clearance
     if visited_nodes[int(next_point[0]*2)][int(next_point[1]*2)][int(next_point[2]/30)] != 1 and (next_point[0],next_point[1]) not in obstacle_points:
-        cost_to_come = curr_node[1] + l 
-        cost_to_go = euclidean_distance(next_point, goal_pt)      
-        next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
+        cost_to_come = curr_node[2] + l 
+        cost_to_go = euclidean_distance(next_point, goal_pt)  
+        total_cost = cost_to_come + cost_to_go  
+        next_node = (total_cost, cost_to_go, cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
+            if map_queue.queue[i][3] == next_point:
             #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
-                if map_queue.queue[i][1] > cost_to_come:
+                if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
                     return 
@@ -258,29 +263,31 @@ def move_minus_30(curr_node):
                     return
         map_queue.put(next_node)
         parent_child_info[(next_point[0],next_point[1])] = current_point
+        if cost_to_go < 1.5:
+            goal_reached = True
 
 def move_minus_60(curr_node):
-    current_point = (curr_node[2][0], curr_node[2][1])
-    next_point = ((current_point[0] + l*math.cos(np.deg2rad(current_node[2][2])-math.pi/3)), current_point[1] + l*math.sin(np.deg2rad(current_node[2][2])-math.pi/3))  
-    next_angle = curr_node[2][2] - 60
+    global goal_reached
+    current_point = (curr_node[3][0], curr_node[3][1])
+    next_point = ((current_point[0] + l*math.cos(np.deg2rad(curr_node[3][2])-math.pi/3)), current_point[1] + l*math.sin(np.deg2rad(curr_node[3][2])-math.pi/3))  
+    next_angle = curr_node[3][2] - 60
     if next_angle >= 360:
         next_angle-=360
     if next_angle < 0:
         next_angle+=360
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
-    print("The next point after rounding off is : ")
-    print(next_point)
     
     ## Obstacle with clearance
     if visited_nodes[int(next_point[0]*2)][int(next_point[1]*2)][int(next_point[2]/30)] != 1 and (next_point[0],next_point[1]) not in obstacle_points:
-        cost_to_come = curr_node[1] + l 
-        cost_to_go = euclidean_distance(next_point, goal_pt)      
-        next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
+        cost_to_come = curr_node[2] + l 
+        cost_to_go = euclidean_distance(next_point, goal_pt) 
+        total_cost =  cost_to_come + cost_to_go   
+        next_node = (total_cost , cost_to_go, cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            if map_queue.queue[i][2] == next_point:
+            if map_queue.queue[i][3] == next_point:
             #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
-                if map_queue.queue[i][1] > cost_to_come:
+                if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
                     return 
@@ -288,6 +295,8 @@ def move_minus_60(curr_node):
                     return
         map_queue.put(next_node)
         parent_child_info[(next_point[0],next_point[1])] = current_point
+        if cost_to_go < 1.5:
+            goal_reached = True
 
 
 # function to track back from the goal node to the start node to get the shortest path
@@ -303,13 +312,14 @@ def move_minus_60(curr_node):
         shortest_path.append(child_tuple)
     return shortest_path """
 
-def back_tracking(path, initial_state, current_node):
+def back_tracking(path, initial_state, curr_val):
     optimal_path = []
-    optimal_path.append(current_node)
-    parent_path = current_node
+    optimal_path.append((curr_val[0], curr_val[1]))
+    parent_path = (curr_val[0], curr_val[1])
     while parent_path != initial_state:  
         parent_path = path[parent_path]
         optimal_path.append(parent_path)
+        #print(optimal_path)
     
     optimal_path.reverse()
     return optimal_path
@@ -402,33 +412,33 @@ start = time.time()
 map_queue = PriorityQueue()
 start_pt = (start_node[0], start_node[1])
 goal_pt = (goal_node[0], goal_node[1])
-map_queue.put((euclidean_distance(start_pt, goal_pt), 0, start_node))
+map_queue.put((euclidean_distance(start_pt, goal_pt), euclidean_distance(start_pt, goal_pt), 0, start_node))
 
 visited_nodes = np.zeros((1200,500,12), dtype=int)
 parent_child_info = {}
 shortest_path = []
 
 visualization_points = create_obstacle_map(clearance)
-
-while True:
+goal_reached = False
+while map_queue.qsize() != 0:
     current_node = map_queue.get()
-    x, y = current_node[2][0], current_node[2][1]
-    print("The current node inside the while True is : ")
-    print(current_node)
-    if visited_nodes[int(x*2)][int(y*2)][int(current_node[2][2]/30)] != 1:
-        visited_nodes[int(x*2)][int(y*2)][int(current_node[2][2]/30)]=1
+    x, y = current_node[3][0], current_node[3][1]
+    #print("The current node inside the while True is : ")
+    #print(current_node)
+    if visited_nodes[int(x*2)][int(y*2)][int(current_node[3][2]/30)] != 1:
+        visited_nodes[int(x*2)][int(y*2)][int(current_node[3][2]/30)]=1
         if euclidean_distance((x,y), goal_pt) > 1.5:
         # if check_obstacle_space((x+radius+l,y)) < 600:
         ### change the limits to max x and y size
             if x >0  and x+l < X_SIZE and y>0 and y<Y_SIZE:
                 move_right(current_node)
-            if x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[2][2]) + math.pi/6)) < X_SIZE and y+(l*math.sin(math.pi/6)) < Y_SIZE:
+            if goal_reached == False and x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[3][2]) + math.pi/6)) < X_SIZE and y+(l*math.sin(math.pi/6)) < Y_SIZE:
                 move_plus_30(current_node)
-            if x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[2][2]) + math.pi/3)) < X_SIZE and y+(l*math.sin(np.deg2rad(current_node[2][2]) + math.pi/3)) < Y_SIZE:
+            if goal_reached == False and x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[3][2]) + math.pi/3)) < X_SIZE and y+(l*math.sin(np.deg2rad(current_node[3][2]) + math.pi/3)) < Y_SIZE:
                 move_plus_60(current_node)
-            if x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[2][2]) - math.pi/6)) < X_SIZE and y+(l*math.sin(np.deg2rad(current_node[2][2]) - math.pi/6)) < Y_SIZE:
+            if goal_reached == False and x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[3][2]) - math.pi/6)) < X_SIZE and y+(l*math.sin(np.deg2rad(current_node[3][2]) - math.pi/6)) < Y_SIZE:
                 move_minus_30(current_node)
-            if x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[2][2]) - math.pi/3)) < X_SIZE and y+(l*math.sin(np.deg2rad(current_node[2][2]) - math.pi/3)) < Y_SIZE:
+            if goal_reached == False and x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[3][2]) - math.pi/3)) < X_SIZE and y+(l*math.sin(np.deg2rad(current_node[3][2]) - math.pi/3)) < Y_SIZE:
                 move_minus_60(current_node)
 
         else:
@@ -436,7 +446,7 @@ while True:
             stop = time.time()
             print("Time: ",stop - start)   
             #shortest = back_tracking(parent_child_info, start_pt, goal_pt)
-            shortest = back_tracking(parent_child_info, start_pt, (current_node[2][0], current_node[2][1]))
+            shortest = back_tracking(parent_child_info, start_pt, current_node[3])
             #shortest.reverse()  
             print(shortest)
             break
