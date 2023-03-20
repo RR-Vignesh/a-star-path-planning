@@ -474,4 +474,10 @@ while map_queue.qsize() != 0:
             print(shortest)
             break
 
-#pygame_visualization(visited_nodes, shortest_path)
+xs = (np.where(visited_nodes == 1)[0])/2
+ys = (np.where(visited_nodes == 1)[1])/2
+visited_pts = []
+for x, y in zip(xs, ys):
+    visited_pts.append((int(x), int(y)))
+# print(visited_pts)    
+pygame_visualization(visited_pts, shortest_path)
