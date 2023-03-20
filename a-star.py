@@ -160,12 +160,12 @@ def move_right(curr_node):
             if map_queue.queue[i][3] == next_point:
                 if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
-                    parent_child_info[(next_point[0],next_point[1])] = current_point
+                    parent_child_info[next_point] = curr_node[3]
                     return
                 else:
                     return
         map_queue.put(next_node)
-        parent_child_info[(next_point[0],next_point[1])] = current_point
+        parent_child_info[next_point] = curr_node[3]
         if cost_to_go < 1.5:
             goal_reached = True
 
@@ -192,12 +192,12 @@ def move_plus_30(curr_node):
             #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
-                    parent_child_info[(next_point[0],next_point[1])] = current_point
+                    parent_child_info[next_point] = curr_node[3]
                     return 
                 else:
                     return
         map_queue.put(next_node)
-        parent_child_info[(next_point[0],next_point[1])] = current_point
+        parent_child_info[next_point] = curr_node[3]
         if cost_to_go < 1.5:
             goal_reached = True
 
@@ -224,13 +224,12 @@ def move_plus_60(curr_node):
             #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
-                    parent_child_info[(next_point[0],next_point[1])] = current_point
+                    parent_child_info[next_point] = curr_node[3]
                     return 
                 else:
                     return 
         map_queue.put(next_node)
-        parent_child_info[(next_point[0],next_point[1])] = current_point
-
+        parent_child_info[next_point] = curr_node[3]
         if cost_to_go < 1.5:
             goal_reached = True
 
@@ -257,12 +256,12 @@ def move_minus_30(curr_node):
             #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
-                    parent_child_info[(next_point[0],next_point[1])] = current_point
+                    parent_child_info[next_point] = curr_node[3]
                     return 
                 else:
                     return
         map_queue.put(next_node)
-        parent_child_info[(next_point[0],next_point[1])] = current_point
+        parent_child_info[next_point] = curr_node[3]
         if cost_to_go < 1.5:
             goal_reached = True
 
@@ -289,37 +288,25 @@ def move_minus_60(curr_node):
             #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
-                    parent_child_info[(next_point[0],next_point[1])] = current_point
+                    parent_child_info[next_point] = curr_node[3]
                     return 
                 else:
                     return
         map_queue.put(next_node)
-        parent_child_info[(next_point[0],next_point[1])] = current_point
+        parent_child_info[next_point] = curr_node[3]
         if cost_to_go < 1.5:
             goal_reached = True
 
 
 # function to track back from the goal node to the start node to get the shortest path
-""" def back_tracking(path_info, initial, current):
-    child = path_info.get(current)
-    current_tuple = tuple(current)
-    child_tuple = tuple(child)
-    shortest_path.append(current_tuple)
-    shortest_path.append(child_tuple)
-    while child != initial:  
-        child = path_info.get(child)
-        child_tuple = tuple(child)
-        shortest_path.append(child_tuple)
-    return shortest_path """
 
 def back_tracking(path, initial_state, curr_val):
     optimal_path = []
-    optimal_path.append((curr_val[0], curr_val[1]))
-    parent_path = (curr_val[0], curr_val[1])
+    optimal_path.append(curr_val)
+    parent_path = (curr_val)
     while parent_path != initial_state:  
         parent_path = path[parent_path]
         optimal_path.append(parent_path)
-        #print(optimal_path)
     
     optimal_path.reverse()
     return optimal_path
@@ -446,7 +433,7 @@ while map_queue.qsize() != 0:
             stop = time.time()
             print("Time: ",stop - start)   
             #shortest = back_tracking(parent_child_info, start_pt, goal_pt)
-            shortest = back_tracking(parent_child_info, start_pt, current_node[3])
+            shortest = back_tracking(parent_child_info, start_node, current_node[3])
             #shortest.reverse()  
             print(shortest)
             break
