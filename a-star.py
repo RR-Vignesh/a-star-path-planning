@@ -3,6 +3,7 @@ from queue import PriorityQueue
 import time
 import pygame as pyg
 import numpy as np
+from sortedcollections import OrderedSet
 
 obstacle_points = []
 
@@ -19,24 +20,24 @@ def find_intersection_pt(slope1, slope2, intercept1, intercept2, a, b):
 
 # create map with obstacle
 def create_obstacle_map(clearance):
-    points = []
+    points = OrderedSet()
     x_range = np.arange(0, X_SIZE+1, 0.5)
     y_range1 = np.arange(0, clearance+1, 0.5)
     y_range2 = np.arange(Y_SIZE - clearance, Y_SIZE + 1, 0.5)
     for xp in x_range:
         for yp in y_range1:
-            points.append((xp,yp))
+            points.add((xp,yp))
         for yp in y_range2:
-            points.append((xp,yp))
+            points.add((xp,yp))
 
     y_range = np.arange(0, Y_SIZE + 1, 0.5)
     x_range1 = np.arange(0, clearance+1, 0.5)
     x_range2 = np.arange(X_SIZE - clearance, X_SIZE + 1, 0.5)
     for yp in y_range:
         for xp in x_range1:
-            points.append((xp,yp))
+            points.add((xp,yp))
         for xp in x_range2:
-            points.append((xp,yp))
+            points.add((xp,yp))
 
     # Rectangles and clearance
     x_range = np.arange(100 - clearance, 150 + clearance + 1, 0.5)
@@ -44,7 +45,7 @@ def create_obstacle_map(clearance):
     for xp in x_range:
         for yp in y_range:
             if yp <= (100 + clearance) or yp >= (150 - clearance):
-                points.append((xp,yp))
+                points.add((xp,yp))
 
     # triangle 
     x_range = np.arange(460-clearance, 510+2*clearance, 0.5)
@@ -61,10 +62,10 @@ def create_obstacle_map(clearance):
     for xp in x_range:
         for yp in y_range:            
             if (m1*xp - yp <= b1) and (m2*xp+yp <= b2):
-                    points.append((xp,yp))
+                    points.add((xp,yp))
 
             if (m1*xp-yp <= min(c1, c2)) and (m2*xp+yp <= min(c3, c4)):
-                    points.append((xp,yp)) 
+                    points.add((xp,yp)) 
 
     # Hexagon
     x_range = np.arange(300 - int(64.95) - clearance, 300 + int(64.95) + clearance, 0.5)
@@ -90,10 +91,10 @@ def create_obstacle_map(clearance):
     for xp in x_range:
         for yp in y_range:            
             if  (yp - m*xp - b1) < 0 and (yp + m*xp - b2) < 0 and (yp + m*xp - b3) > 0 and (yp - m*xp + b4) > 0:
-                points.append((xp,yp))      
+                points.add((xp,yp))      
             
             if  (yp - m*xp - max(c1, c2)) < 0 and (yp + m*xp - max(c3, c4)) < 0 and (yp - m*xp - min(c5, c6)) > 0 and (yp + m*xp + min(c7, c8)) > 0:
-                points.append((xp,yp))    
+                points.add((xp,yp))    
     
     hexagon_p1 = find_intersection_pt(-m, m, max(c1, c2), max(c3, c4), 1, 1)
     hexagon_p2 = find_intersection_pt(m, 1, max(c3, c4), 300 + 64.95 + clearance, 1, 0)
@@ -103,7 +104,7 @@ def create_obstacle_map(clearance):
     hexagon_p6 = find_intersection_pt(1, -m, 300 - 64.95-clearance, max(c1, c2), 0, 1)
 
     hexagon_pts = [hexagon_p1, hexagon_p2, hexagon_p3, hexagon_p4, hexagon_p5, hexagon_p6]
-    return points, hexagon_pts
+    return points
 
 # Validating input values
 def get_input():
