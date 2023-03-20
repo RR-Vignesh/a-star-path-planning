@@ -10,64 +10,100 @@ obstacle_points = []
 X_SIZE = 600
 Y_SIZE = 250
 
+def find_intersection_pt(slope1, slope2, intercept1, intercept2, a, b):
+    A = np.array([[slope1, a], [slope2, b]])
+    B = np.array([intercept1, intercept2])
+    X = np.linalg.solve(A, B)
+    print("X: ",X)
+    return X
+
 # create map with obstacle
 def create_obstacle_map(clearance):
     points = []
-    for xp in range(0, X_SIZE+1):
-        for yp in range(0, clearance+1):
+    x_range = np.arange(0, X_SIZE+1, 0.5)
+    y_range1 = np.arange(0, clearance+1, 0.5)
+    y_range2 = np.arange(Y_SIZE - clearance, Y_SIZE + 1, 0.5)
+    for xp in x_range:
+        for yp in y_range1:
             points.append((xp,yp))
-        for yp in range(Y_SIZE - clearance, Y_SIZE + 1):
+        for yp in y_range2:
             points.append((xp,yp))
 
-    for yp in range(0, Y_SIZE + 1):
-        for xp in range(0, clearance+1):
+    y_range = np.arange(0, Y_SIZE + 1, 0.5)
+    x_range1 = np.arange(0, clearance+1, 0.5)
+    x_range2 = np.arange(X_SIZE - clearance, X_SIZE + 1, 0.5)
+    for yp in y_range:
+        for xp in x_range1:
             points.append((xp,yp))
-        for xp in range(X_SIZE - clearance, X_SIZE + 1):
+        for xp in x_range2:
             points.append((xp,yp))
 
     # Rectangles and clearance
-    for xp in range(100 - clearance, 150 + clearance + 1):
-        for yp in range(0, Y_SIZE+1):
+    x_range = np.arange(100 - clearance, 150 + clearance + 1, 0.5)
+    y_range = np.arange(0, Y_SIZE+1, 0.5)
+    for xp in x_range:
+        for yp in y_range:
             if yp <= (100 + clearance) or yp >= (150 - clearance):
                 points.append((xp,yp))
 
     # triangle 
-    for xp in range(460-clearance, 510+2*clearance):
-        for yp in range(0, Y_SIZE):
-            m1, m2 = 2, 2
-            b1, b2 = 895, 1145
+    x_range = np.arange(460-clearance, 510+2*clearance, 0.5)
+    y_range = np.arange(0, Y_SIZE, 0.5)
+
+    m1, m2 = 2, 2
+    b1, b2 = 895, 1145
+    
+    c1 = b1 + clearance * (math.sqrt(pow(m2,2) + 1))
+    c2 = b1 - clearance * (math.sqrt(pow(m2,2) + 1))
+    c3 = b2 + clearance * (math.sqrt(pow(m1,2) + 1))
+    c4 = b2 - clearance * (math.sqrt(pow(m1,2) + 1))
+    
+    for xp in x_range:
+        for yp in y_range:            
             if (m1*xp - yp <= b1) and (m2*xp+yp <= b2):
                     points.append((xp,yp))
-            
-            c1 = b1 + clearance * (math.sqrt(pow(m2,2) + 1))
-            c2 = b1 - clearance * (math.sqrt(pow(m2,2) + 1))
-            c3 = b2 + clearance * (math.sqrt(pow(m1,2) + 1))
-            c4 = b2 - clearance * (math.sqrt(pow(m1,2) + 1))
 
             if (m1*xp-yp <= min(c1, c2)) and (m2*xp+yp <= min(c3, c4)):
-                    points.append((xp,yp))  
-
+                    points.append((xp,yp)) 
 
     # Hexagon
-    for xp in range(300 - int(64.95) - clearance, 300 + int(64.95) + clearance):
-        for yp in range(125 - 75 - clearance, 125 + 75 + clearance):
-            m = 0.577
-            b1, b2, b3, b4 = 32.692, 378.846, 217.307, 128.846
-            if  (yp - m*xp - b1) < 0 and (yp + m*xp - b2) < 0 and (yp + m*xp - b3) > 0 and (yp - m*xp + b4) > 0:
-                points.append((xp,yp))
-            
-            c1 = b1 + clearance * (math.sqrt(pow(m,2) + 1))
-            c2 = b1 - clearance * (math.sqrt(pow(m,2) + 1))
-            c3 = b2 + clearance * (math.sqrt(pow(m,2) + 1))
-            c4 = b2 - clearance * (math.sqrt(pow(m,2) + 1))
-            c5 = b3 + clearance * (math.sqrt(pow(m,2) + 1))
-            c6 = b3 - clearance * (math.sqrt(pow(m,2) + 1))
-            c7 = b4 + clearance * (math.sqrt(pow(m,2) + 1))
-            c8 = b4 - clearance * (math.sqrt(pow(m,2) + 1))
+    x_range = np.arange(300 - int(64.95) - clearance, 300 + int(64.95) + clearance, 0.5)
+    y_range = np.arange(125 - 75 - clearance, 125 + 75 + clearance, 0.5)
 
-            if  (yp - m*xp - min(c1, c2)) < 0 and (yp + m*xp - min(c3, c4)) < 0 and (yp + m*xp - min(c5, c6)) > 0 and (yp - m*xp + min(c7, c8)) > 0:
+    m = 15/26
+    b1, b2, b3, b4 = 32.692, 378.846, 217.307, 128.846
+    
+    c1 = b1 + clearance * (math.sqrt(pow(m,2) + 1))
+    c2 = b1 - clearance * (math.sqrt(pow(m,2) + 1))
+    c3 = b2 + clearance * (math.sqrt(pow(m,2) + 1))
+    c4 = b2 - clearance * (math.sqrt(pow(m,2) + 1))
+    c5 = b3 + clearance * (math.sqrt(pow(m,2) + 1))
+    c6 = b3 - clearance * (math.sqrt(pow(m,2) + 1))
+    c7 = b4 + clearance * (math.sqrt(pow(m,2) + 1))
+    c8 = b4 - clearance * (math.sqrt(pow(m,2) + 1))
+    
+    print(max(c1, c2))
+    print(max(c3, c4))
+    print(min(c5, c6))
+    print(min(c7, c8))
+
+    for xp in x_range:
+        for yp in y_range:            
+            if  (yp - m*xp - b1) < 0 and (yp + m*xp - b2) < 0 and (yp + m*xp - b3) > 0 and (yp - m*xp + b4) > 0:
+                points.append((xp,yp))      
+            
+            if  (yp - m*xp - max(c1, c2)) < 0 and (yp + m*xp - max(c3, c4)) < 0 and (yp - m*xp - min(c5, c6)) > 0 and (yp + m*xp + min(c7, c8)) > 0:
                 points.append((xp,yp))    
-    return points
+    
+    hexagon_p1 = find_intersection_pt(-m, m, max(c1, c2), max(c3, c4), 1, 1)
+    hexagon_p2 = find_intersection_pt(m, 1, max(c3, c4), 300 + 64.95 + clearance, 1, 0)
+    hexagon_p3 = find_intersection_pt(1, -m, 300 + 64.95 + clearance, min(c5, c6), 0, 1)
+    hexagon_p4 = find_intersection_pt(-m, m, min(c5, c6), -min(c7, c8), 1, 1)
+    hexagon_p5 = find_intersection_pt(m, 1, -min(c7, c8), 300 - 64.95 -clearance, 1, 0)
+    hexagon_p6 = find_intersection_pt(1, -m, 300 - 64.95-clearance, max(c1, c2), 0, 1)
+
+    hexagon_pts = [hexagon_p1, hexagon_p2, hexagon_p3, hexagon_p4, hexagon_p5, hexagon_p6]
+    return points, hexagon_pts
 
 # Validating input values
 def get_input():
