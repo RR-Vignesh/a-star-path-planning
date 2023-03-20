@@ -69,29 +69,26 @@ def create_obstacle_map(clearance):
                 points.append((xp,yp))    
     return points
 
-def check_obstacle_space(node, rad, obstacle_points):
-    robot_space = ((node[0],node[1]),(node[0]+rad,node[1]), (node[0]-rad,node[1]), (node[0],node[1]+rad), (node[0],node[1]-rad))
-    for robot_pos in robot_space:
-        if robot_pos in obstacle_points:
-            return False
-        
-    return True
-
 # Validating input values
 def get_input():
-    clearance = int(input("Enter the clearance of the mobile robot"))
-    rad = int(input("Enter the radius of the mobile robot"))
+    clearance = int(input("Enter the clearance of the mobile robot: "))
+    rad = int(input("Enter the radius of the mobile robot: "))
 
     # Create Obstacle based on the clearance and radius of the robot
     obstacle_points = create_obstacle_map(clearance + rad)
-    l = int(input("Enter the step size L of the mobile robot (between 1-10)"))
+    while True:
+        l = int(input("Enter the step size L of the mobile robot (between 1-10): "))
+        if l>=1 and l<=10:
+            break
+        else:
+            print("Incorrect step size. Please enter positive step size between 1 and 10")
+
     accept_start_node, accept_goal_node = True, True
     while accept_start_node:
         start_x = int(input("Enter start x: "))
         start_y = int(input("Enter start y: "))
         start_node = (start_x, start_y)
-        """ robot_status = check_obstacle_space(start_node, rad, obstacle_points)
-        if robot_status == True: """
+
         if start_node not in obstacle_points:
             accept_start_node = False
             while True:
@@ -144,6 +141,11 @@ def move_right(curr_node):
     print(current_point)
     next_point = (current_point[0] + l, current_point[1])  
     next_angle = curr_node[2][2]
+    if next_angle >= 360:
+        next_angle-=360
+    if next_angle < 0:
+        next_angle+=360
+
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
     print("The next point after rounding off is :")
@@ -155,8 +157,7 @@ def move_right(curr_node):
         cost_to_go = euclidean_distance(next_point, goal_pt)      
         next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            #if map_queue.queue[i][2] == next_point:
-            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
+            if map_queue.queue[i][2] == next_point:
                 if map_queue.queue[i][1] > cost_to_come:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
@@ -172,6 +173,10 @@ def move_plus_30(curr_node):
     current_point = (curr_node[2][0], curr_node[2][1])
     next_point = ((current_point[0] + l*math.cos(np.deg2rad(current_node[2][2]) + math.pi/6)), current_point[1] + l*math.sin(np.deg2rad(current_node[2][2]) + math.pi/6))  
     next_angle = curr_node[2][2] + 30
+    if next_angle >= 360:
+        next_angle-=360
+    if next_angle < 0:
+        next_angle+=360
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
     print("The next point after rounding off is :")
@@ -183,8 +188,8 @@ def move_plus_30(curr_node):
         cost_to_go = euclidean_distance(next_point, goal_pt)      
         next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            #if map_queue.queue[i][2] == next_point:
-            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
+            if map_queue.queue[i][2] == next_point:
+            #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][1] > cost_to_come:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
@@ -198,6 +203,10 @@ def move_plus_60(curr_node):
     current_point = (curr_node[2][0], curr_node[2][1])
     next_point = ((current_point[0] + l*math.cos(np.deg2rad(current_node[2][2]) + math.pi/3)), current_point[1] + l*math.sin(np.deg2rad(current_node[2][2]) + math.pi/3))  
     next_angle = curr_node[2][2] + 60
+    if next_angle >= 360:
+        next_angle-=360
+    if next_angle < 0:
+        next_angle+=360
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
     print("The next point after rounding off is :")
@@ -209,14 +218,14 @@ def move_plus_60(curr_node):
         cost_to_go = euclidean_distance(next_point, goal_pt)      
         next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            #if map_queue.queue[i][2] == next_point:
-            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
+            if map_queue.queue[i][2] == next_point:
+            #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][1] > cost_to_come:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
                     return 
                 else:
-                    return
+                    return 
         map_queue.put(next_node)
         parent_child_info[(next_point[0],next_point[1])] = current_point
 
@@ -224,9 +233,13 @@ def move_minus_30(curr_node):
     current_point = (curr_node[2][0], curr_node[2][1])
     next_point = ((current_point[0] + l*math.cos(np.deg2rad(current_node[2][2])-math.pi/6)), current_point[1] + l*math.sin(np.deg2rad(current_node[2][2])-math.pi/6))  
     next_angle = curr_node[2][2] - 30
+    if next_angle >= 360:
+        next_angle-=360
+    if next_angle < 0:
+        next_angle+=360
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
-    print("The next point after rounding off is :")
+    print("The next point after rounding off is : ")
     print(next_point)
     
     ## Obstacle with clearance
@@ -235,8 +248,8 @@ def move_minus_30(curr_node):
         cost_to_go = euclidean_distance(next_point, goal_pt)      
         next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            #if map_queue.queue[i][2] == next_point:
-            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
+            if map_queue.queue[i][2] == next_point:
+            #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][1] > cost_to_come:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
@@ -250,9 +263,13 @@ def move_minus_60(curr_node):
     current_point = (curr_node[2][0], curr_node[2][1])
     next_point = ((current_point[0] + l*math.cos(np.deg2rad(current_node[2][2])-math.pi/3)), current_point[1] + l*math.sin(np.deg2rad(current_node[2][2])-math.pi/3))  
     next_angle = curr_node[2][2] - 60
+    if next_angle >= 360:
+        next_angle-=360
+    if next_angle < 0:
+        next_angle+=360
     # round off next point to nearest 0.5
     next_point = (round_nearest(next_point[0]), round_nearest(next_point[1]), next_angle)
-    print("The next point after rounding off is :")
+    print("The next point after rounding off is : ")
     print(next_point)
     
     ## Obstacle with clearance
@@ -261,8 +278,8 @@ def move_minus_60(curr_node):
         cost_to_go = euclidean_distance(next_point, goal_pt)      
         next_node = (cost_to_come + cost_to_go ,cost_to_come, next_point)
         for i in range(map_queue.qsize()):
-            #if map_queue.queue[i][2] == next_point:
-            if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
+            if map_queue.queue[i][2] == next_point:
+            #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][1] > cost_to_come:
                     map_queue.queue[i] = next_node 
                     parent_child_info[(next_point[0],next_point[1])] = current_point
@@ -274,7 +291,7 @@ def move_minus_60(curr_node):
 
 
 # function to track back from the goal node to the start node to get the shortest path
-def back_tracking(path_info, initial, current):
+""" def back_tracking(path_info, initial, current):
     child = path_info.get(current)
     current_tuple = tuple(current)
     child_tuple = tuple(child)
@@ -284,7 +301,18 @@ def back_tracking(path_info, initial, current):
         child = path_info.get(child)
         child_tuple = tuple(child)
         shortest_path.append(child_tuple)
-    return shortest_path
+    return shortest_path """
+
+def back_tracking(path, initial_state, current_node):
+    optimal_path = []
+    optimal_path.append(current_node)
+    parent_path = current_node
+    while parent_path != initial_state:  
+        parent_path = path[parent_path]
+        optimal_path.append(parent_path)
+    
+    optimal_path.reverse()
+    return optimal_path
 
 # to flip the coordinates because of the origin change in pygame
 def flip_points(points, height):
@@ -407,8 +435,9 @@ while True:
             print("Reached Goal")
             stop = time.time()
             print("Time: ",stop - start)   
-            shortest = back_tracking(parent_child_info, start_pt, goal_pt)
-            shortest.reverse()  
+            #shortest = back_tracking(parent_child_info, start_pt, goal_pt)
+            shortest = back_tracking(parent_child_info, start_pt, (current_node[2][0], current_node[2][1]))
+            #shortest.reverse()  
             print(shortest)
             break
 
