@@ -11,12 +11,14 @@ obstacle_points = []
 X_SIZE = 600
 Y_SIZE = 250
 
-def find_intersection_pt(slope1, slope2, intercept1, intercept2, a, b):
-    A = np.array([[slope1, a], [slope2, b]])
-    B = np.array([intercept1, intercept2])
+def find_intersection_pt(a1, a2, intercept1, intercept2, b1, b2):
+    A = np.array([[a1, b1], [a2, b2]])
+    B = np.array([[intercept1], [intercept2]])
+    print(A.shape)
+    print(B.shape)
     X = np.linalg.solve(A, B)
-    print("X: ",X)
-    return X
+    print("X: ",X[0][0], X[1][0])
+    return (X[0][0], X[1][0])
 
 # create map with obstacle
 def create_obstacle_map(clearance):
@@ -51,28 +53,33 @@ def create_obstacle_map(clearance):
     x_range = np.arange(460-clearance, 510+2*clearance, 0.5)
     y_range = np.arange(0, Y_SIZE, 0.5)
 
-    m1, m2 = 2, 2
-    b1, b2 = 895, 1145
+    m = 2
+    b1, b2 = -895, 1145
     
-    c1 = b1 + clearance * (math.sqrt(pow(m2,2) + 1))
-    c2 = b1 - clearance * (math.sqrt(pow(m2,2) + 1))
-    c3 = b2 + clearance * (math.sqrt(pow(m1,2) + 1))
-    c4 = b2 - clearance * (math.sqrt(pow(m1,2) + 1))
-    
+    c1 = b1 + clearance * (math.sqrt(pow(m,2) + 1))
+    c2 = b1 - clearance * (math.sqrt(pow(m,2) + 1))
+    c3 = b2 + clearance * (math.sqrt(pow(m,2) + 1))
+    c4 = b2 - clearance * (math.sqrt(pow(m,2) + 1))
+
     for xp in x_range:
         for yp in y_range:            
-            if (m1*xp - yp <= b1) and (m2*xp+yp <= b2):
-                    points.add((xp,yp))
-
-            if (m1*xp-yp <= min(c1, c2)) and (m2*xp+yp <= min(c3, c4)):
+            if (-m*xp+yp >= min(c1, c2)) and (m*xp+yp <= max(c3, c4)):
                     points.add((xp,yp)) 
+
+    triangle_p1 = [460 - clearance, 225 + clearance]
+    triangle_p2 = find_intersection_pt(m, 0, max(c3, c4), 225 + clearance, 1, 1)
+    triangle_p3 = find_intersection_pt(-m, m, min(c1, c2), max(c3, c4), 1, 1)
+    triangle_p4 = find_intersection_pt(-m, 0, min(c1, c2), 25 - clearance, 1, 1)
+    triangle_p5 = [460 - clearance, 25 - clearance]
+
+    triangle_pts = [triangle_p1, triangle_p2, triangle_p3, triangle_p4, triangle_p5]
 
     # Hexagon
     x_range = np.arange(300 - int(64.95) - clearance, 300 + int(64.95) + clearance, 0.5)
     y_range = np.arange(125 - 75 - clearance, 125 + 75 + clearance, 0.5)
 
     m = 15/26
-    b1, b2, b3, b4 = 32.692, 378.846, 217.307, 128.846
+    b1, b2, b3, b4 = 26.92, 373.07, 223.07, -123.21
     
     c1 = b1 + clearance * (math.sqrt(pow(m,2) + 1))
     c2 = b1 - clearance * (math.sqrt(pow(m,2) + 1))
@@ -82,29 +89,22 @@ def create_obstacle_map(clearance):
     c6 = b3 - clearance * (math.sqrt(pow(m,2) + 1))
     c7 = b4 + clearance * (math.sqrt(pow(m,2) + 1))
     c8 = b4 - clearance * (math.sqrt(pow(m,2) + 1))
-    
-    print(max(c1, c2))
-    print(max(c3, c4))
-    print(min(c5, c6))
-    print(min(c7, c8))
 
     for xp in x_range:
         for yp in y_range:            
-            if  (yp - m*xp - b1) < 0 and (yp + m*xp - b2) < 0 and (yp + m*xp - b3) > 0 and (yp - m*xp + b4) > 0:
-                points.add((xp,yp))      
-            
-            if  (yp - m*xp - max(c1, c2)) < 0 and (yp + m*xp - max(c3, c4)) < 0 and (yp - m*xp - min(c5, c6)) > 0 and (yp + m*xp + min(c7, c8)) > 0:
+            if  (yp - m*xp - max(c1, c2)) <= 0 and (yp + m*xp - max(c3, c4)) <= 0 and (yp - m*xp - min(c7, c8)) >= 0 and (yp + m*xp + min(c5, c6)) >= 0:
                 points.add((xp,yp))    
-    
+
     hexagon_p1 = find_intersection_pt(-m, m, max(c1, c2), max(c3, c4), 1, 1)
     hexagon_p2 = find_intersection_pt(m, 1, max(c3, c4), 300 + 64.95 + clearance, 1, 0)
-    hexagon_p3 = find_intersection_pt(1, -m, 300 + 64.95 + clearance, min(c5, c6), 0, 1)
-    hexagon_p4 = find_intersection_pt(-m, m, min(c5, c6), -min(c7, c8), 1, 1)
-    hexagon_p5 = find_intersection_pt(m, 1, -min(c7, c8), 300 - 64.95 -clearance, 1, 0)
+    hexagon_p3 = find_intersection_pt(1, -m, 300 + 64.95 + clearance, min(c7, c8), 0, 1)
+    hexagon_p4 = find_intersection_pt(m, -m, min(c5, c6), min(c7, c8), 1, 1)
+    hexagon_p5 = find_intersection_pt(m, 1, min(c5, c6), 300 - 64.95 -clearance, 1, 0)
     hexagon_p6 = find_intersection_pt(1, -m, 300 - 64.95-clearance, max(c1, c2), 0, 1)
 
     hexagon_pts = [hexagon_p1, hexagon_p2, hexagon_p3, hexagon_p4, hexagon_p5, hexagon_p6]
-    return points
+
+    return points, hexagon_pts, triangle_pts
 
 # Validating input values
 def get_input():
@@ -112,7 +112,7 @@ def get_input():
     rad = int(input("Enter the radius of the mobile robot: "))
 
     # Create Obstacle based on the clearance and radius of the robot
-    obstacle_points = create_obstacle_map(clearance + rad)
+    obstacle_points, hexagon_pts, triangle_pts = create_obstacle_map(clearance + rad)
     while True:
         l = int(input("Enter the step size L of the mobile robot (between 1-10): "))
         if l>=1 and l<=10:
@@ -153,10 +153,9 @@ def get_input():
 
             goal_node = (goal_x, goal_y, goal_theta)
         else:
-            print("Entered goal node is in obstacle. Please enter a co-ordinate...")
-    
+            print("Entered goal node is in obstacle. Please enter a co-ordinate...")    
 
-    return start_node, goal_node, clearance, l, rad, obstacle_points
+    return start_node, goal_node, clearance, l, rad, obstacle_points, hexagon_pts, triangle_pts
 
 def euclidean_distance(pt1, pt2):
     distance = math.sqrt(pow((pt1[0] - pt2[0]), 2) + pow((pt1[1] - pt2[1]),2))
@@ -258,7 +257,6 @@ def move_plus_60(curr_node):
         next_node = (total_cost, cost_to_go, cost_to_come, next_point)
         for i in range(map_queue.qsize()):
             if map_queue.queue[i][3] == next_point:
-            #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[next_point] = curr_node[3]
@@ -290,7 +288,6 @@ def move_minus_30(curr_node):
         next_node = (total_cost, cost_to_go, cost_to_come, next_point)
         for i in range(map_queue.qsize()):
             if map_queue.queue[i][3] == next_point:
-            #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[next_point] = curr_node[3]
@@ -322,7 +319,6 @@ def move_minus_60(curr_node):
         next_node = (total_cost , cost_to_go, cost_to_come, next_point)
         for i in range(map_queue.qsize()):
             if map_queue.queue[i][3] == next_point:
-            #if euclidean_distance(next_point,map_queue.queue[i][2]) <= 0.5 and (next_angle - map_queue.queue[i][2][2]) <= 30:
                 if map_queue.queue[i][0] > total_cost:
                     map_queue.queue[i] = next_node 
                     parent_child_info[next_point] = curr_node[3]
@@ -355,7 +351,7 @@ def flip_points(points, height):
 def flip_object_points(points, height, object_height):
     return (points[0], height - points[1] - object_height)
 
-def pygame_visualization(visited_nodes, shortest_path):
+def pygame_visualization(visited_nodes, shortest_path, obstacle_points, hexagon_points, triangle_points):
     pyg.init()
     window = pyg.display.set_mode((X_SIZE,Y_SIZE))
 
@@ -364,27 +360,27 @@ def pygame_visualization(visited_nodes, shortest_path):
     condition = True
     clock = pyg.time.Clock()
 
-    rect2_clearance = flip_object_points([95, 0], 250, 105)
-    rect1_clearance = flip_object_points([95, 145], 250, 105)
-    rect2_original = flip_object_points([100, 0], 250, 100)
-    rect1_original = flip_object_points([100, 150], 250, 100)
+    rect2_clearance = flip_object_points([100 - clearance, 0], Y_SIZE, 100+clearance)
+    rect1_clearance = flip_object_points([100 - clearance, 150 - clearance], Y_SIZE, 100+clearance)
+    rect2_original = flip_object_points([100, 0], Y_SIZE, 100)
+    rect1_original = flip_object_points([100, 150], Y_SIZE, 100)
 
-    triangle1_clearance = flip_points([455, 20], 250)
-    triangle2_clearance = flip_points([463, 20], 250)
-    triangle3_clearance = flip_points([515.5, 125], 250)
-    triangle4_clearance = flip_points([463, 230], 250)
-    triangle5_clearance = flip_points([455, 230], 250)
+    triangle1_clearance = flip_points([triangle_points[0][0], triangle_points[0][1]], Y_SIZE)
+    triangle2_clearance = flip_points([triangle_points[1][0], triangle_points[1][1]], Y_SIZE)
+    triangle3_clearance = flip_points([triangle_points[2][0], triangle_points[2][1]], Y_SIZE)
+    triangle4_clearance = flip_points([triangle_points[3][0], triangle_points[3][1]], Y_SIZE)
+    triangle5_clearance = flip_points([triangle_points[4][0], triangle_points[4][1]], Y_SIZE)
 
     triangle1 = (460, 25)
     triangle2 = (460, 225)
     triangle3 = (510, 125)
 
-    hexagon1_clearance = (300, 205.76)
-    hexagon2_clearance = (230, 165.38)
-    hexagon3_clearance = (230, 84.61)
-    hexagon4_clearance = (300, 44.23)
-    hexagon5_clearance = (370, 84.61)
-    hexagon6_clearance = (370, 165.38)
+    hexagon1_clearance = hexagon_points[0]
+    hexagon2_clearance = hexagon_points[1]
+    hexagon3_clearance = hexagon_points[2]
+    hexagon4_clearance = hexagon_points[3]
+    hexagon5_clearance = hexagon_points[4]
+    hexagon6_clearance = hexagon_points[5]
 
     hexagon1_org = (235,87.5)
     hexagon2_org = (300,50)
@@ -398,8 +394,8 @@ def pygame_visualization(visited_nodes, shortest_path):
             if loop.type == pyg.QUIT:
                 condition = False
 
-        pyg.draw.rect(window, clearance_color, pyg.Rect(rect2_clearance[0], rect2_clearance[1], 60, 105))
-        pyg.draw.rect(window, clearance_color, pyg.Rect(rect1_clearance[0], rect1_clearance[1], 60, 105))
+        pyg.draw.rect(window, clearance_color, pyg.Rect(rect2_clearance[0], rect2_clearance[1], 50 + 2*clearance, 100 + clearance))
+        pyg.draw.rect(window, clearance_color, pyg.Rect(rect1_clearance[0], rect1_clearance[1], 50 + 2*clearance, 100 + clearance))
         pyg.draw.rect(window, obstacle_color, pyg.Rect(rect2_original[0], rect2_original[1], 50, 100))
         pyg.draw.rect(window, obstacle_color, pyg.Rect(rect1_original[0], rect1_original[1], 50, 100))
 
@@ -409,18 +405,18 @@ def pygame_visualization(visited_nodes, shortest_path):
         pyg.draw.polygon(window, clearance_color, ((hexagon1_clearance),(hexagon2_clearance),(hexagon3_clearance),(hexagon4_clearance),(hexagon5_clearance),(hexagon6_clearance)))
         pyg.draw.polygon(window, obstacle_color, ((hexagon1_org),(hexagon2_org),(hexagon3_org),(hexagon4_org),(hexagon5_org),(hexagon6_org)))
 
-        pyg.draw.rect(window, clearance_color ,pyg.Rect(0, 0, 600, 5))
-        pyg.draw.rect(window, clearance_color ,pyg.Rect(0, 245, 600, 5))
-        pyg.draw.rect(window, clearance_color ,pyg.Rect(0, 0, 5, 250))
-        pyg.draw.rect(window, clearance_color ,pyg.Rect(595, 0, 5, 250))
+        pyg.draw.rect(window, clearance_color ,pyg.Rect(0, 0, X_SIZE, clearance))
+        pyg.draw.rect(window, clearance_color ,pyg.Rect(0, Y_SIZE - clearance, X_SIZE, clearance))
+        pyg.draw.rect(window, clearance_color ,pyg.Rect(0, 0, clearance, Y_SIZE))
+        pyg.draw.rect(window, clearance_color ,pyg.Rect(X_SIZE - clearance, 0, clearance, Y_SIZE))
 
         for node in visited_nodes:
-            pyg.draw.circle(window, "white", flip_points(node, 250), 1)
+            pyg.draw.circle(window, "white", flip_points(node, Y_SIZE), 1)
             pyg.display.flip()
             clock.tick(700)
 
         for node in shortest_path:
-            pyg.draw.circle(window, "teal", flip_points(node, 250), 1)
+            pyg.draw.circle(window, "teal", flip_points(node, Y_SIZE), 1)
             pyg.display.flip()
             clock.tick(10)
 
@@ -430,7 +426,7 @@ def pygame_visualization(visited_nodes, shortest_path):
     pyg.quit()
 
 # Obtaining and validating the input from the user
-start_node, goal_node, clearance, l, radius, obstacle_points = get_input()
+start_node, goal_node, clearance, l, radius, obstacle_points, hexagon_pts, triangle_pts = get_input()
 
 start = time.time()
 map_queue = PriorityQueue()
@@ -447,13 +443,9 @@ goal_reached = False
 while map_queue.qsize() != 0:
     current_node = map_queue.get()
     x, y = current_node[3][0], current_node[3][1]
-    #print("The current node inside the while True is : ")
-    #print(current_node)
     if visited_nodes[int(x*2)][int(y*2)][int(current_node[3][2]/30)] != 1:
         visited_nodes[int(x*2)][int(y*2)][int(current_node[3][2]/30)]=1
         if euclidean_distance((x,y), goal_pt) > 1.5:
-        # if check_obstacle_space((x+radius+l,y)) < 600:
-        ### change the limits to max x and y size
             if x >0  and x+l < X_SIZE and y>0 and y<Y_SIZE:
                 move_right(current_node)
             if goal_reached == False and x>0 and y>0 and x+(l*math.cos(np.deg2rad(current_node[3][2]) + math.pi/6)) < X_SIZE and y+(l*math.sin(math.pi/6)) < Y_SIZE:
@@ -469,9 +461,7 @@ while map_queue.qsize() != 0:
             print("Reached Goal")
             stop = time.time()
             print("Time: ",stop - start)   
-            #shortest = back_tracking(parent_child_info, start_pt, goal_pt)
             shortest = back_tracking(parent_child_info, start_node, current_node[3])
-            #shortest.reverse()  
             print(shortest)
             break
 
@@ -480,5 +470,4 @@ ys = (np.where(visited_nodes == 1)[1])/2
 visited_pts = []
 for x, y in zip(xs, ys):
     visited_pts.append((int(x), int(y)))
-# print(visited_pts)    
-pygame_visualization(visited_pts, shortest_path)
+pygame_visualization(visited_pts, shortest_path, obstacle_points, hexagon_pts, triangle_pts)
