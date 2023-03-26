@@ -1,6 +1,6 @@
 # Project 3
 ## Description
-A* star alogorithm is implemented for a point robot with clearance to reach its goal point.
+A-Star algorithm is implemented on a mobile robot to move from any given source node to goal node by calculating the cost and heuristic function at each node w.r.t to the previous node and goal node respectively.
 
 ## Authors
 1. Guru Nandhan Appiya Dilipkumar Peethambari - guruadp(119183281)<br />
